@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Demo RFID</string>
+
+    <!-- Main Activity -->
+    <string name="found_label">encontrada:</string>
+    <string name="time_label">hora:</string>
+    <string name="actions_button">acciones</string>
+
 </resources>
