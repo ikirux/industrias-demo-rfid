@@ -5,5 +5,9 @@
     <string name="found_label">encontrada:</string>
     <string name="time_label">hora:</string>
     <string name="actions_button">acciones</string>
+    <string name="FooterResume">resumir</string>
+    <string name="FooterPause">pausar</string>
+    <string name="FooterStart">comenzar</string>
+    <string name="FooterStop">detener</string>
 
 </resources>

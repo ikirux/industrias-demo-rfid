@@ -6,6 +6,7 @@ import com.ugrokit.api.*;
 
 public class DemoRFIDApplication extends Application {
     private Ugi ugi;
+
     public Ugi getUgi() { return ugi; }
 
     @Override public void onCreate() {

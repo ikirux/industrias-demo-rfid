@@ -5,9 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".activities.MainActivity"
     android:orientation="vertical"
     tools:ignore="Overdraw">
+
+    <!-- Title bar -->
+    <com.ugrokit.api.UgiTitleView style="@style/UgiTitleView" />
 
     <!--  Top line: # found., time, actions button -->
     <LinearLayout
@@ -43,11 +46,6 @@
 
         <View style="@style/UgiHorizontalSpacerView"/>
 
-        <Button android:id="@+id/actions_button"
-            style="@style/UgiButton"
-            android:layout_height="match_parent"
-            android:text="@string/actions_button"
-            android:onClick="doActions"/>
     </LinearLayout>
 
     <View
@@ -64,5 +62,8 @@
         android:listSelector="@android:color/darker_gray"
         android:divider="@drawable/list_divider"
         android:dividerHeight="1px" />
+
+    <!--  Footer -->
+    <com.ugrokit.api.UgiFooterView style="@style/UgiFooterView" />
 
 </LinearLayout>
