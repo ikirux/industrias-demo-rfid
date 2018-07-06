@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.ugrokit.api.Ugi;
+import com.ugrokit.api.UgiEpc;
 import com.ugrokit.api.UgiFooterView;
 import com.ugrokit.api.UgiInventory;
 import com.ugrokit.api.UgiInventoryDelegate;
@@ -92,7 +93,7 @@ public class MainActivity extends UgiUiActivity implements
 
     private void updateUI() {
         final UgiInventory inventory = Ugi.getSingleton().getActiveInventory();
-        findViewById(R.id.actions_button).setEnabled(inventory == null);
+        //findViewById(R.id.actions_button).setEnabled(inventory == null);
 
         UgiFooterView footer = getFooterView();
         if (inventory != null) {
@@ -318,23 +319,35 @@ public class MainActivity extends UgiUiActivity implements
     }
 
     private void doWriteUserMemory(UgiTag tag) {
-        Ugi.getSingleton().getActiveInventory().resumeInventory();
-        updateUI();
-        final byte[] newData = "Hello World!".getBytes();
-        UgiUiUtil.showWaiting(this, "writing user memory");
-        Ugi.getSingleton().getActiveInventory().writeTag(tag.getEpc(),
-                UgiRfidConfiguration.MemoryBank.User, 0, newData, null,
-                UgiInventory.NO_PASSWORD, (tag1, result) -> {
-                    UgiUiUtil.hideWaiting();
-                    if (result == UgiInventory.TagAccessReturnValues.OK) {
-                        UgiUiUtil.showOk(this, "write user memory",
-                                "Write " + newData.length + " bytes: " + byteArrayToString(newData),
-                                "", null);
-                    } else {
-                        UgiUiUtil.showOk(this, "write user memory",
-                                "Error writing tag: " + UgiUiUtil.getTagAccessErrorMessage(result));
-                    }
-                });
+
+        UgiUiUtil.showTextInput(
+                this,
+                "escribir tag", "Información:", "escribir", "",
+                UgiUiUtil.DEFAULT_INPUT_TYPE,
+                null, false,
+                (value, switchValue) -> {
+                    UgiEpc newEpc = new UgiEpc(value);
+                    Ugi.getSingleton().getActiveInventory().resumeInventory();
+                    this.updateUI();
+                    UgiUiUtil.showWaiting(this, "guardando");
+                    final byte[] newData = value.getBytes();
+                    Ugi.getSingleton().getActiveInventory().writeTag(tag.getEpc(),
+                            UgiRfidConfiguration.MemoryBank.User, 0, newData, null,
+                            UgiInventory.NO_PASSWORD, (tag1, result) -> {
+                                UgiUiUtil.hideWaiting();
+                                if (result == UgiInventory.TagAccessReturnValues.OK) {
+                                    UgiUiUtil.showOk(this, "escribir memoria de usuario",
+                                            "Escritos " + newData.length + " bytes: " + byteArrayToString(newData),
+                                            "", null);
+                                } else {
+                                    UgiUiUtil.showOk(this, "escribir memoria de usuario",
+                                            "Error al escribir tag: " + UgiUiUtil.getTagAccessErrorMessage(result));
+                                }
+                            });
+                }, () -> {
+                    Ugi.getSingleton().getActiveInventory().resumeInventory();
+                    this.updateUI();
+                }, value -> (value.length() > 0));
     }
 
     private void doLocate(final UgiTag tag) {
