@@ -27,7 +27,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import cl.usach.developen.demorfid.demorfid.DemoRFIDApplication;
 import cl.usach.developen.demorfid.demorfid.R;
+import cl.usach.developen.demorfid.demorfid.models.Tag;
+import cl.usach.developen.demorfid.demorfid.models.Tag_;
+import io.objectbox.Box;
+import io.objectbox.BoxStore;
 
 public class MainActivity extends UgiUiActivity implements
         UgiInventoryDelegate,
@@ -296,9 +301,22 @@ public class MainActivity extends UgiUiActivity implements
     private void doReadUserMemory(UgiTag tag) {
         Ugi.getSingleton().getActiveInventory().resumeInventory();
         updateUI();
-        UgiUiUtil.showWaiting(this, "reading user memory");
+        UgiUiUtil.showWaiting(this, "Leyendo información asociada");
         System.out.println("doReadUserMemory");
-        Ugi.getSingleton().getActiveInventory().readTag(
+
+        BoxStore boxStore = DemoRFIDApplication.getApp().getBoxStore();
+        Box<Tag> tagBox = boxStore.boxFor(Tag.class);
+        Tag tagObject = tagBox.query()
+                            .equal(Tag_.EPC, tag.getEpc().toString())
+                            .build().findUnique();
+        String contentTag = null != tagObject ? tagObject.getContenido() : "";
+
+        UgiUiUtil.hideWaiting();
+        UgiUiUtil.showOk(this, "Información Asociada",
+                "Contenido: " + contentTag,
+                "", null);
+
+        /*Ugi.getSingleton().getActiveInventory().readTag(
                 tag.getEpc(),
                 UgiRfidConfiguration.MemoryBank.User,
                 0, 16, 64,
@@ -315,7 +333,7 @@ public class MainActivity extends UgiUiActivity implements
                                 "Error: " + UgiUiUtil.getTagAccessErrorMessage(result));
                     }
                 }
-        );
+        );*/
     }
 
     private void doWriteUserMemory(UgiTag tag) {
@@ -326,11 +344,26 @@ public class MainActivity extends UgiUiActivity implements
                 UgiUiUtil.DEFAULT_INPUT_TYPE,
                 null, false,
                 (value, switchValue) -> {
-                    UgiEpc newEpc = new UgiEpc(value);
+                    //UgiEpc newEpc = new UgiEpc(value);
                     Ugi.getSingleton().getActiveInventory().resumeInventory();
                     this.updateUI();
                     UgiUiUtil.showWaiting(this, "guardando");
-                    final byte[] newData = value.getBytes();
+                    BoxStore boxStore = DemoRFIDApplication.getApp().getBoxStore();
+                    Box<Tag> tagBox = boxStore.boxFor(Tag.class);
+                    Tag tagObject = tagBox.query()
+                            .equal(Tag_.EPC, tag.getEpc().toString())
+                            .build().findUnique();
+
+                    if (null == tagObject) {
+                        tagObject = new Tag();
+                    }
+
+                    tagObject.setEPC(tag.getEpc().toString());
+                    tagObject.setContenido(value);
+                    tagBox.put(tagObject);
+                    UgiUiUtil.hideWaiting();
+
+                    /*final byte[] newData = value.getBytes();
                     Ugi.getSingleton().getActiveInventory().writeTag(tag.getEpc(),
                             UgiRfidConfiguration.MemoryBank.User, 0, newData, null,
                             UgiInventory.NO_PASSWORD, (tag1, result) -> {
@@ -343,7 +376,7 @@ public class MainActivity extends UgiUiActivity implements
                                     UgiUiUtil.showOk(this, "escribir memoria de usuario",
                                             "Error al escribir tag: " + UgiUiUtil.getTagAccessErrorMessage(result));
                                 }
-                            });
+                            });*/
                 }, () -> {
                     Ugi.getSingleton().getActiveInventory().resumeInventory();
                     this.updateUI();
@@ -364,7 +397,7 @@ public class MainActivity extends UgiUiActivity implements
             Ugi.getSingleton().startInventory(this, config);
             this.updateUI();
             this.updateCountAndTime();
-            UgiUiUtil.showToast(this, "Restarted inventory", "Searching for only " + tag.getEpc().toString());
+            UgiUiUtil.showToast(this, "Reinicio de Inventario", "Buscando tag " + tag.getEpc().toString());
         });
     }
 
